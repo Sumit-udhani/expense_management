@@ -10,10 +10,7 @@ module.exports = (sequelize) => {
             type: DataTypes.DECIMAL(10, 2),
             allowNull: false
         },
-        category: {
-            type: DataTypes.STRING,
-            allowNull: false
-        },
+        
         date: {
             type: DataTypes.DATEONLY,
             allowNull: false

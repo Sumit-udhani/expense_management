@@ -1,16 +1,21 @@
-const jwt = require('jsonwebtoken')
-module.exports = (req,res,next) =>{
-    const token = req.get('Authorization').split(' ')[1]
-    let decodeToken;
-    try {
-        decodeToken = jwt.verify(token,'somesecretsuperKey')
-    } catch (error) {
-        console.log(error)
+// middleware/auth.js
+const jwt = require('jsonwebtoken');
+
+module.exports = (req, res, next) => {
+  try {
+    const authHeader = req.get('Authorization');
+    if (!authHeader) {
+      return res.status(401).json({ message: 'No token provided' });
     }
-    if (!decodeToken) {
-        throw new Error('Unauthenticated')
-    }
-    req.userId = decodeToken.userId;
-    req.userRole = decoded.role;
-    next()
-}
+
+    const token = authHeader.split(' ')[1];
+    const decodedToken = jwt.verify(token, 'somesecretsuperKey');
+
+    req.userId = decodedToken.userId;
+    req.userRole = decodedToken.role;
+
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: 'Authentication failed', error: error.message });
+  }
+};

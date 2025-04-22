@@ -1,5 +1,7 @@
 const express = require('express')
 const userRoutes = require('./routes/user')
+const expenseRoutes = require('./routes/expense')
+
  const app = express();
  const bodyParser = require('body-parser')
  app.use((req,res,next)=>{
@@ -13,7 +15,9 @@ const userRoutes = require('./routes/user')
 })
  app.use(bodyParser.json())
  app.use('/auth',userRoutes)
- const sequelize = require('./model/index')
+ app.use('/expense',expenseRoutes)
+
+ const { sequelize } = require("./model");
  sequelize.sync({alter:true})
  .then((result) => {
     console.log('connected')

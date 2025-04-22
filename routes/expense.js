@@ -1,0 +1,11 @@
+const express = require('express')
+const router = express.Router()
+const isAuth = require('../middleware/isAuth')
+const expensecontroller = require('../controller/expense')
+router.use(isAuth)
+router.post('/',expensecontroller.createExpense)
+router.get('/',expensecontroller.getAllExpense)
+router.get('/:id',expensecontroller.getExpense)
+router.put('/:id',expensecontroller.expenseUpdate)
+router.delete('/:id',expensecontroller.expenseDelete)
+module.exports = router
