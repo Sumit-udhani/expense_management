@@ -9,7 +9,7 @@ module.exports = (req, res, next) => {
     }
 
     const token = authHeader.split(' ')[1];
-    const decodedToken = jwt.verify(token, 'somesecretsuperKey');
+    const decodedToken = jwt.verify(token, process.env.JWT_LOGIN_SECRET_KEY);
 
     req.userId = decodedToken.userId;
     req.userRole = decodedToken.role;

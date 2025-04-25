@@ -1,13 +1,19 @@
 const { DataTypes } = require('sequelize');
 
-module.exports = (sequelize) => {
-    const Tag = sequelize.define('Tag', {
-        name: {
-            type: DataTypes.STRING,
-            unique: true,
-            allowNull: false
+module.exports = (sequelize, DataTypes) => {
+    const Tag = sequelize.define('Tags', {
+      name: {
+        type: DataTypes.STRING,
+        allowNull: false
+      }
+    }, {
+      indexes: [
+        {
+          unique: true,
+          fields: ['name']
         }
+      ]
     });
-
+  
     return Tag;
 };
