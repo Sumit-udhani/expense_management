@@ -7,12 +7,8 @@ module.exports = (sequelize) => {
             allowNull:false,
             
             
-        },
-        isGlobal: {
-            type: DataTypes.BOOLEAN,
-            defaultValue: false,
-        },
-       
+        }
+      
        
     });
 

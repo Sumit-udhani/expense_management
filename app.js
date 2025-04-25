@@ -1,7 +1,7 @@
 const express = require('express')
 const userRoutes = require('./routes/user')
 const expenseRoutes = require('./routes/expense')
-
+const categoryRoutes = require('./routes/category')
  const app = express();
  const bodyParser = require('body-parser')
  app.use((req,res,next)=>{
@@ -16,7 +16,7 @@ const expenseRoutes = require('./routes/expense')
  app.use(bodyParser.json())
  app.use('/auth',userRoutes)
  app.use('/expense',expenseRoutes)
-
+app.use('/category',categoryRoutes)
  const { sequelize } = require("./model");
  sequelize.sync({alter:true})
  .then((result) => {

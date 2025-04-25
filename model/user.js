@@ -12,6 +12,22 @@ module.exports = (sequelize) => {
             type: DataTypes.STRING,
             allowNull: false,
         },
+        IsEmailVerifed:{
+            type:DataTypes.BOOLEAN,
+            default:false
+        },
+        isActive: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false, 
+          },
+        otp: {
+            type: DataTypes.STRING,
+            allowNull: true,
+          },
+          otpExpiresAt: {
+            type: DataTypes.DATE,
+            allowNull: true,
+          },
        
     });
 

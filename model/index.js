@@ -11,7 +11,7 @@ const Roles = require("./roles")(sequelize, DataTypes);
 const Category = require("./categories")(sequelize, DataTypes);
 const Budget = require("./Budget")(sequelize, DataTypes);
 
-// Define associations
+
 User.hasMany(Expense, { foreignKey: "userId" });
 Expense.belongsTo(User, { foreignKey: "userId" });
 
