@@ -2,7 +2,8 @@ const {Category} = require('../model')
 module.exports = {
     async createCategory (req,res,next) {
         try {
-            const {name,userId} = req.body;
+            const {name} = req.body;
+            const userId  = req.userId
             const category = await Category.create({
                 name,
                

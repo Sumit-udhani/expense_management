@@ -2,6 +2,8 @@ const express = require('express')
 const userRoutes = require('./routes/user')
 const expenseRoutes = require('./routes/expense')
 const categoryRoutes = require('./routes/category')
+const adminRoutes = require('./routes/admin')
+const tagRoutes = require('./routes/tag')
  const app = express();
  const bodyParser = require('body-parser')
  app.use((req,res,next)=>{
@@ -17,6 +19,8 @@ const categoryRoutes = require('./routes/category')
  app.use('/auth',userRoutes)
  app.use('/expense',expenseRoutes)
 app.use('/category',categoryRoutes)
+app.use('/admin',adminRoutes)
+app.use('/tag',tagRoutes)
  const { sequelize } = require("./model");
  sequelize.sync({alter:true})
  .then((result) => {

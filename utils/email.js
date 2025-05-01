@@ -9,7 +9,7 @@ const transporter = nodemailer.createTransport({
 });
 
 exports.sendVerificationEmail = (email, otp, token) => {
-  const verificationUrl = `http://localhost:8085/auth/verify-email?token=${token}`;
+  const verificationUrl = `http://localhost:5173/verify-email?token=${token}`;
   return transporter.sendMail({
     to: email,
     subject: 'Verify your Email and OTP',
@@ -22,5 +22,17 @@ exports.sendVerificationEmail = (email, otp, token) => {
       </ul>
       <p>This OTP will expire in 10 minutes.</p>
     `
+  });
+};
+exports.sendResetPasswordEmail = (email,  resetLink) => {
+  return transporter.sendMail({
+    to: email,
+    subject: 'Reset Your Password',
+    html: `
+      <h2>Password Reset Request</h2>
+      <p>You requested to reset your password.</p>
+      <p>Click <a href="${resetLink}">here</a> to reset your password.</p>
+      <p>This link will expire in 15 minutes.</p>
+      <p>If you did not request this, please ignore this email.</p> `
   });
 };

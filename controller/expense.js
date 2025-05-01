@@ -3,7 +3,8 @@ module.exports = {
   
        async createExpense  (req,res,next)  {
         try {
-           const {title,amount,date,notes,userId,categoryId,tagId} = req.body;
+           const {title,amount,date,notes,categoryId,tagId} = req.body;
+           const userId = req.userId; 
            const expense = await Expense.create({
                title,
                amount,
@@ -11,8 +12,8 @@ module.exports = {
                notes,
                userId,
                categoryId,
-              
-   
+                tagId
+
            })
            if (tagId && tagId.length) {
                await expense.setTags(tagId)
