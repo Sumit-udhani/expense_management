@@ -4,8 +4,13 @@ const expenseRoutes = require('./routes/expense')
 const categoryRoutes = require('./routes/category')
 const adminRoutes = require('./routes/admin')
 const tagRoutes = require('./routes/tag')
+const expressFileUpload = require('express-fileupload');
  const app = express();
  const bodyParser = require('body-parser')
+ app.use(expressFileUpload({
+   useTempFiles: true,  
+   tempFileDir: 'files'
+ }));
  app.use((req,res,next)=>{
     res.setHeader('Access-Control-Allow-Origin','*')
     res.setHeader('Access-Control-Allow-Methods','GET,POST,PUT,PATCH,DELETE')

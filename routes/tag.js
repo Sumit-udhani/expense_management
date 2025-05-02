@@ -5,4 +5,5 @@ const authMiddleware = require('../middleware/isAuth'); // JWT check
 
 
 router.post('/', authMiddleware, tagController.createTag);
+router.get('/',authMiddleware,tagController.getAllTags)
 module.exports = router

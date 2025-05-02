@@ -1,4 +1,6 @@
 const {Category} = require('../model')
+const { Op } = require('sequelize');
+
 module.exports = {
     async createCategory (req,res,next) {
         try {
@@ -14,6 +16,21 @@ module.exports = {
             console.log(error)
             res.status(500).json({ message: 'Failed to create category', error });
         }
+    },
+    async getAll(req, res) {
+      try {
+        const userId = req.userId;
+        const categories = await Category.findAll({
+          where: {
+            [Op.or]: [{ userId }, { userId: null }], // includes global (null) and user-specific
+          },
+        });
+  
+        res.status(200).json(categories);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to fetch categories', error });
+      }
     },
     async deleteCategory(req, res) {
         try {

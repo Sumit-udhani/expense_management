@@ -28,3 +28,15 @@ exports.resetPasswordValidator = [
     })
     .withMessage("confirmPassword does not match with newPassword"),
 ];
+exports.expenseValidator = [
+  body("title").notEmpty().withMessage("Title is require"),
+  body("amount")
+  .isFloat({ gt: 0 })
+  .withMessage("Amount must be a positive number"),
+body("date")
+  .isISO8601()
+  .toDate()
+  .withMessage("Date must be a valid ISO8601 date"),
+body("notes").optional().isString().withMessage("Notes must be a string"),
+
+]

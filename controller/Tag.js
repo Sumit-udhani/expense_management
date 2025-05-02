@@ -11,3 +11,17 @@ exports.createTag  =async(req, res) => {
       res.status(500).json({ message: 'Failed to create tag', error });
     }
   }
+  exports.getAllTags = async (req, res) => {
+    try {
+      const userId = req.userId;
+      const tags = await Tag.findAll({
+        where: {
+          [Op.or]: [{ userId }, { userId: null }],
+        },
+      });
+  
+      res.status(200).json(tags);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch tags', error });
+    }
+  };
