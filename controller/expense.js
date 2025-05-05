@@ -8,19 +8,10 @@ module.exports = {
       const { title, amount, date, notes, categoryId, tagId, paymentMode, paymentStatus } = req.body;
       const userId = req.userId;
       let attachment = null;
-
-      // Handle file upload for attachment
-      if (req.files && req.files.attachment) {
-        const file = req.files.attachment;
-        const fileName = `${Date.now()}-${file.name}`;
-        const filePath = path.join(__dirname, '../uploads', fileName);
-        file.mv(filePath, (err) => {
-          if (err) {
-            return res.status(500).json({ message: 'File upload failed', err });
-          }
-        });
-        attachment = filePath;
+      if (req.file) {
+          attachment = req.file.path
       }
+     
 
       const expense = await Expense.create({
         title,
@@ -32,10 +23,10 @@ module.exports = {
         tagId,
         paymentMode,
         paymentStatus,
-        attachment, // Save the attachment path
+        attachment, 
       });
 
-      // Associate tags if provided
+     
       if (tagId && tagId.length) {
         await expense.setTags(tagId);
       }
@@ -46,23 +37,21 @@ module.exports = {
     }
   },
 
-  async getExpense(req, res, next) {
+  async getAllExpensesForUser(req, res, next) {
     try {
       const userId = req.userId;
-      const expense = await Expense.findByPk(req.params.id, {
-        include: [User, Category, Tag],
+      const expenses = await Expense.findAll({
+        where: { userId },
+        include: [Category, Tag], 
+        order: [['createdAt', 'DESC']],
       });
-      if (!expense) {
-        return res.status(404).json({ error: "Expense not found" });
-      }
-      if (expense.userId !== userId) {
-        return res.status(403).json({ message: "You are not authorized to see this expense" });
-      }
-      res.status(200).json(expense);
+      res.status(200).json(expenses);
     } catch (error) {
-      res.status(500).json({ error: "Failed to fetch expense" });
+      console.error('Error fetching user expenses:', error);
+      res.status(500).json({ error: 'Failed to fetch user expenses' });
     }
   },
+  
 
   async expenseUpdate(req, res, next) {
     try {
@@ -74,26 +63,15 @@ module.exports = {
       if (expense.userId !== userId) {
         return res.status(403).json({ message: "You are not authorized to update this expense" });
       }
-
-      // Handle file update if there's a new attachment
-      let attachment = expense.attachment; // Keep the old attachment if no new file
-      if (req.files && req.files.attachment) {
-        const file = req.files.attachment;
-        const fileName = `${Date.now()}-${file.name}`;
-        const filePath = path.join(__dirname, '../files', fileName);
-        file.mv(filePath, (err) => {
-          if (err) {
-            return res.status(500).json({ message: 'File upload failed', err });
-          }
-        });
-
-        // Delete old file if it exists (optional, depending on your storage strategy)
-        if (attachment) {
+      let attachment = expense.attachment;
+      if (req.file) {
+        // Delete old file
+        if (attachment && fs.existsSync(attachment)) {
           fs.unlinkSync(attachment);
         }
-
-        attachment = filePath;
+        attachment = req.file.path;
       }
+      
 
       await expense.update({
         title,
@@ -128,7 +106,7 @@ module.exports = {
       }
 
       // Delete the file if it exists (optional)
-      if (expense.attachment) {
+      if (expense.attachment && fs.existsSync(expense.attachment)) {
         fs.unlinkSync(expense.attachment);
       }
 
@@ -138,4 +116,4 @@ module.exports = {
       res.status(500).json({ message: "Error during deleting expense" });
     }
   },
-};
+};  

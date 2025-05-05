@@ -4,13 +4,10 @@ const expenseRoutes = require('./routes/expense')
 const categoryRoutes = require('./routes/category')
 const adminRoutes = require('./routes/admin')
 const tagRoutes = require('./routes/tag')
-const expressFileUpload = require('express-fileupload');
+
  const app = express();
  const bodyParser = require('body-parser')
- app.use(expressFileUpload({
-   useTempFiles: true,  
-   tempFileDir: 'files'
- }));
+
  app.use((req,res,next)=>{
     res.setHeader('Access-Control-Allow-Origin','*')
     res.setHeader('Access-Control-Allow-Methods','GET,POST,PUT,PATCH,DELETE')
@@ -20,12 +17,15 @@ const expressFileUpload = require('express-fileupload');
       }
     next()
 })
+
  app.use(bodyParser.json())
  app.use('/auth',userRoutes)
  app.use('/expense',expenseRoutes)
 app.use('/category',categoryRoutes)
 app.use('/admin',adminRoutes)
 app.use('/tag',tagRoutes)
+// app.use('/files', express.static(path.join(__dirname, 'files')));
+
  const { sequelize } = require("./model");
  sequelize.sync({alter:true})
  .then((result) => {

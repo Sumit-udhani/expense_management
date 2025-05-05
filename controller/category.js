@@ -22,7 +22,7 @@ module.exports = {
         const userId = req.userId;
         const categories = await Category.findAll({
           where: {
-            [Op.or]: [{ userId }, { userId: null }], // includes global (null) and user-specific
+            [Op.or]: [{ userId }, { userId: null }], 
           },
         });
   

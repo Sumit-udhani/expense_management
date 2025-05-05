@@ -15,7 +15,7 @@ exports.getAllUsers = async(req,res,next)=>{
 exports.getAllExpense = async (req, res, next) => {
   try {
     const expense = await Expense.findAll({
-      attributes: ['id', 'title', 'amount', 'date', 'notes',  'userId', 'categoryId'],
+      attributes: [ 'title', 'amount', 'date',   'userId', 'categoryId'],
       include: [
         {
           model: User,
