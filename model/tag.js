@@ -4,17 +4,10 @@ module.exports = (sequelize, DataTypes) => {
     const Tag = sequelize.define('Tags', {
       name: {
         type: DataTypes.STRING,
-        unique:true,
+        unique: true,  
         allowNull: false
       }
-    }, {
-      indexes: [
-        {
-          unique: true,
-          fields: ['name']
-        }
-      ]
     });
-  
+
     return Tag;
 };

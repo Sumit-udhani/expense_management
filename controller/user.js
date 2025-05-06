@@ -139,7 +139,10 @@ exports.login = async (req, res, next) => {
     if (!isMatch) {
       return res.status(401).json({ message: "Wrong password" });
     }
-
+    if (!user.isActive) {
+      return res.status(403).json({ message: "User account is inactive." });
+    }
+    
     const token = generateToken(
       { userId: user.id, email: user.email, role: user.Role.name },
       process.env.JWT_LOGIN_SECRET_KEY

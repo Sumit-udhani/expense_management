@@ -104,10 +104,12 @@ module.exports = {
       if (expense.userId !== userId) {
         return res.status(403).json({ message: "You are not authorized to delete this expense" });
       }
-
-      // Delete the file if it exists (optional)
-      if (expense.attachment && fs.existsSync(expense.attachment)) {
-        fs.unlinkSync(expense.attachment);
+        
+      if (req.file) {
+        
+        if (expense.attachment && fs.existsSync(expense.attachment)) {
+          fs.unlinkSync(expense.attachment);
+        }
       }
 
       await expense.destroy();

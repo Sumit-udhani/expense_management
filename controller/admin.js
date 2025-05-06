@@ -15,7 +15,7 @@ exports.getAllUsers = async(req,res,next)=>{
 exports.getAllExpense = async (req, res, next) => {
   try {
     const expense = await Expense.findAll({
-      attributes: [ 'title', 'amount', 'date',   'userId', 'categoryId'],
+   
       include: [
         {
           model: User,
@@ -38,17 +38,19 @@ exports.getAllExpense = async (req, res, next) => {
     res.status(500).json({ message: 'error during fetching Expenses', err: error });
   }
 };
-
-  
-exports.deleteUsers = async (req,res,next) =>{
-    try {
-        const users =  await User.findByPk(req.params.id)
-        if (!users) {
-            return res.status(404).json({ error: 'User  not found' }); 
-        }
-       await  users.destroy()
-       res.status(200).json({message: 'User deleted successfully '})
-    } catch (error) {
-        res.status(500).json({message:'eror during Deleting User'})
+exports.updateUserStatus = async(req,res,next) =>{
+  const userId = req.params.id;
+  const {isActive} = req.body
+  try {
+    const user = await User.findByPk(userId)
+    if (!user) {
+      res.status(404).json({message:'User not found'})
     }
+    user.isActive = isActive
+    await user.save()
+    res.status(200).json({ message: "User status updated successfully", user });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating user status", error: error.message });
+  }
 }
+  
