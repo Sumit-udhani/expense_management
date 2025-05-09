@@ -4,7 +4,7 @@ const expenseRoutes = require('./routes/expense')
 const categoryRoutes = require('./routes/category')
 const adminRoutes = require('./routes/admin')
 const tagRoutes = require('./routes/tag')
-
+const budgetRoutes = require('./routes/budget')
  const app = express();
  const bodyParser = require('body-parser')
 
@@ -24,6 +24,7 @@ const tagRoutes = require('./routes/tag')
 app.use('/category',categoryRoutes)
 app.use('/admin',adminRoutes)
 app.use('/tag',tagRoutes)
+app.use('/budget',budgetRoutes)
 // app.use('/files', express.static(path.join(__dirname, 'files')));
 
  const { sequelize } = require("./model");

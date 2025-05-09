@@ -40,3 +40,23 @@ body("date")
 body("notes").optional().isString().withMessage("Notes must be a string"),
 
 ]
+exports.budgetValidator = [
+  body("amount")
+    .isFloat({ gt: 0 })
+    .withMessage("Amount must be a positive number"),
+  body("month")
+    .isInt({ min: 1, max: 12 })
+    .withMessage("Month must be an integer between 1 and 12"),
+  body("year")
+    .isInt({ min: 2000, max: 2100 })
+    .withMessage("Year must be a valid integer between 2000 and 2100"),
+    body("categoryId")
+    .optional({ nullable: true }) // allow null or undefined
+    .custom((value) => {
+      if (value === null || value === undefined) return true; // allow overall budget
+      if (!Number.isInteger(Number(value))) {
+        throw new Error("Category ID must be an integer or null");
+      }
+      return true;
+    }), // or .isInt() if you're using numeric IDs
+];
