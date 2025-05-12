@@ -1,7 +1,7 @@
 const { Expense, User, Category, Tag } = require("../model");
 const path = require("path");
 const fs = require("fs");
-
+const { Op } = require("sequelize");
 module.exports = {
   async createExpense(req, res, next) {
     try {
@@ -49,12 +49,34 @@ module.exports = {
   async getAllExpensesForUser(req, res, next) {
     try {
       const userId = req.userId;
-      const expenses = await Expense.findAll({
+      const allExpenses = await Expense.findAll({
         where: { userId },
         include: [Category, Tag],
         order: [["createdAt", "DESC"]],
       });
-      res.status(200).json(expenses);
+      
+      const searchTerm = req.query.search || "";
+      console.log("Received search term:", searchTerm);
+
+      const filtered = allExpenses.filter((expense) =>
+        expense.title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      
+     
+      const page = parseInt(req.query.page) || 1;
+      const limit = 5;
+      const offset = (page - 1) * limit;
+      
+      const paginated = filtered.slice(offset, offset + limit);
+      const totalPages = Math.ceil(filtered.length / limit);
+      
+      res.status(200).json({
+        currentPage: page,
+        totalPages,
+        totalExpenses: filtered.length,
+        data: paginated,
+      });
+      
     } catch (error) {
       console.error("Error fetching user expenses:", error);
       res.status(500).json({ error: "Failed to fetch user expenses" });
