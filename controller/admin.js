@@ -40,6 +40,35 @@ exports.getAllExpense = async (req, res, next) => {
       .json({ message: "error during fetching Expenses", err: error });
   }
 };
+
+exports.getExpensesByUserId = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const expenses = await Expense.findAll({
+      where: { userId: id }, 
+
+      include: [
+        {
+          model: Category,
+          attributes: ["id", "name"],
+        },
+        {
+          model: Tag,
+          attributes: ["id", "name"],
+          through: { attributes: [] },
+        },
+      ],
+    });
+
+    res.status(200).json(expenses);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching expenses for the user",
+      error: error.message,
+    });
+  }
+};
+
 exports.updateUserStatus = async (req, res, next) => {
   const userId = req.params.id;
   const { isActive } = req.body;
@@ -55,5 +84,34 @@ exports.updateUserStatus = async (req, res, next) => {
     res
       .status(500)
       .json({ message: "Error updating user status", error: error.message });
+  }
+};
+exports.getUserById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userData = await User.findByPk(id, {
+      attributes: ['id', 'name', 'email', 'isActive'], 
+      include: [
+        {
+          model: Roles,
+          attributes: ['name'], 
+        },
+      ],
+    });
+
+    if (!userData) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+   
+    const user = userData.toJSON(); 
+    user.role = user.Roles?.name;
+   
+
+    res.status(200).json(user);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: 'Error fetching user details', error: error.message });
   }
 };

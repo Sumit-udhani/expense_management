@@ -45,43 +45,57 @@ module.exports = {
       res.status(500).json({ message: "Failed to create expense", err: error });
     }
   },
-
+  
   async getAllExpensesForUser(req, res, next) {
     try {
       const userId = req.userId;
-      const allExpenses = await Expense.findAll({
-        where: { userId },
-        include: [Category, Tag],
-        order: [["createdAt", "DESC"]],
-      });
-      
       const searchTerm = req.query.search || "";
-      console.log("Received search term:", searchTerm);
-
-      const filtered = allExpenses.filter((expense) =>
-        expense.title.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      
-     
       const page = parseInt(req.query.page) || 1;
       const limit = 5;
       const offset = (page - 1) * limit;
-      
-      const paginated = filtered.slice(offset, offset + limit);
-      const totalPages = Math.ceil(filtered.length / limit);
-      
+      const sortColumnMap = {
+        title: ["title"],
+        amount: ["amount"],
+        date: ["date"],
+        paymentStatus: ["paymentStatus"],
+        paymentMode: ["paymentMode"],
+        category: [Category, "name"], 
+        createdAt: ["createdAt"],
+      };
+  
+      const sortParam = req.query.sortColumn || "createdAt";
+      const sortOrder = req.query.sortOrder?.toUpperCase() === "ASC" ? "ASC" : "DESC";
+  
+      const sortColumn = sortColumnMap[sortParam] || ["createdAt"];
+  
+     
+      const { count, rows } = await Expense.findAndCountAll({
+        where: {
+          userId,
+          title: {
+            [Op.like]: `%${searchTerm}%`,
+          },
+        },
+        include: [Category, Tag],
+        order: [[...sortColumn, sortOrder]],
+        offset,
+        limit,
+      });
+  
+      const totalPages = Math.ceil(count / limit);
+  
       res.status(200).json({
         currentPage: page,
         totalPages,
-        totalExpenses: filtered.length,
-        data: paginated,
+        totalExpenses: count,
+        data: rows,
       });
-      
     } catch (error) {
       console.error("Error fetching user expenses:", error);
       res.status(500).json({ error: "Failed to fetch user expenses" });
     }
   },
+  
 
   async expenseUpdate(req, res, next) {
     try {
