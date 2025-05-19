@@ -19,13 +19,15 @@ const budgetRoutes = require('./routes/budget')
 })
 
  app.use(bodyParser.json())
+ app.use('/files', express.static('files'));
+
  app.use('/auth',userRoutes)
  app.use('/expense',expenseRoutes)
 app.use('/category',categoryRoutes)
 app.use('/admin',adminRoutes)
 app.use('/tag',tagRoutes)
 app.use('/budget',budgetRoutes)
-// app.use('/files', express.static(path.join(__dirname, 'files')));
+
 
  const { sequelize } = require("./model");
  sequelize.sync({alter:true})

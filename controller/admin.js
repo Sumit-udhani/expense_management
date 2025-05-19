@@ -1,21 +1,72 @@
 const { User, Roles, Expense, Category, Tag } = require("../model");
+const { Op } = require("sequelize");
+
 exports.getAllUsers = async (req, res, next) => {
   try {
-    const users = await User.findAll({
-      attributes: ["id", "name", "email", "isActive"],
-      include: { model: Roles, attributes: ["name"] },
+    const page = parseInt(req.query.page) || 1;
+    const sortColumn = req.query.sortColumn || "name";
+    const sortOrder = req.query.sortOrder?.toUpperCase() === "ASC" ? "ASC" : "DESC";
+    const search = req.query.search || "";
+    const limit = 5;
+    const offset = (page - 1) * limit;
+
+    
+    const sortMapping = {
+      name: ['name'],
+      email: ['email'],
+      status: ['isActive'],         
+      role: [Roles, 'name'],        
+    };
+
+    const order = [];
+
+    if (sortMapping[sortColumn]) {
+      const column = sortMapping[sortColumn];
+      if (Array.isArray(column)) {
+        order.push(column.concat(sortOrder));
+      } else {
+        order.push([column, sortOrder]);
+      }
+    } else {
+      
+      order.push(['name', sortOrder]);
+    }
+
+    const { count, rows } = await User.findAndCountAll({
+      where: {
+        name: {
+          [Op.like]: `%${search}%`,
+        },
+      },
+      include: {
+        model: Roles,
+        attributes: ["name"],
+      },
+      order,
+      limit,
+      offset,
     });
-    res.status(200).json({ users });
+
+    const totalPages = Math.ceil(count / limit);
+    res.status(200).json({
+      currentPage: page,
+      totalPages,
+      totalUsers: count,
+      users: rows,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Failed to fetch users", error: error.message });
+    res.status(500).json({ message: "Failed to fetch users", error: error.message });
   }
 };
 
+
+
 exports.getAllExpense = async (req, res, next) => {
   try {
-    const expense = await Expense.findAll({
+    const page = parseInt(req.query.page) || 1;
+    const limit = 5;
+    const offset = (page - 1) * limit;
+    const { count, rows } = await Expense.findAndCountAll({
       include: [
         {
           model: User,
@@ -31,9 +82,16 @@ exports.getAllExpense = async (req, res, next) => {
           through: { attributes: [] },
         },
       ],
+      offset,
+      limit,
     });
-
-    res.status(200).json(expense);
+    const totalPages = Math.ceil(count / limit);
+    res.status(200).json({
+      currentPage: page,
+        totalPages,
+        totalExpenses: count,
+        data: rows,
+    });
   } catch (error) {
     res
       .status(500)
@@ -42,25 +100,41 @@ exports.getAllExpense = async (req, res, next) => {
 };
 
 exports.getExpensesByUserId = async (req, res) => {
-  const { id } = req.params;
   try {
-    const expenses = await Expense.findAll({
-      where: { userId: id }, 
-
-      include: [
-        {
-          model: Category,
-          attributes: ["id", "name"],
+    const { id } = req.params;
+    const searchTerm = req.query.search || "";
+    const page = parseInt(req.query.page) || 1;
+    const limit = 5;
+    const offset = (page - 1) * limit;
+    const sortColumnMap = {
+      title: ["title"],
+      amount: ["amount"],
+      category: [Category, "name"], 
+      date: ["date"],
+     
+    };
+    const sortParam = req.query.sortColumn || "createdAt";
+    const sortOrder = req.query.sortOrder?.toUpperCase() === "ASC" ? "ASC" : "DESC";
+    const sortColumn = sortColumnMap[sortParam] || ["title"];
+    const { count, rows } = await Expense.findAndCountAll({
+      where: {
+        userId:id,
+        title: {
+          [Op.like]: `%${searchTerm}%`,
         },
-        {
-          model: Tag,
-          attributes: ["id", "name"],
-          through: { attributes: [] },
-        },
-      ],
+      },
+      include: [Category, Tag],
+      order: [[...sortColumn, sortOrder]],
+      offset,
+      limit,
     });
-
-    res.status(200).json(expenses);
+    const totalPages = Math.ceil(count / limit);
+    res.status(200).json({
+      currentPage: page,
+      totalPages,
+      totalExpenses: count,
+      data: rows,
+    });
   } catch (error) {
     res.status(500).json({
       message: "Error fetching expenses for the user",

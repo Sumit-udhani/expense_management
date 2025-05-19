@@ -5,6 +5,7 @@ exports.hashPassword = async(password) => {
   
    return await bcrypt.hash(password, 12);
 } 
+
 exports.comparePassword = (password, hashed) => bcrypt.compare(password, hashed);
 
 exports.generateToken = (payload, secret, expiresIn = "1h") => {

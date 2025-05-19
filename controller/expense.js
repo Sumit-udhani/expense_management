@@ -18,7 +18,8 @@ module.exports = {
       const userId = req.userId;
       let attachment = null;
       if (req.file) {
-        attachment = req.file.path;
+        attachment = `files/${req.file.filename}`;
+
       }
 
       const expense = await Expense.create({
@@ -69,7 +70,7 @@ module.exports = {
       const sortColumn = sortColumnMap[sortParam] || ["createdAt"];
   
      
-      const { count, rows } = await Expense.findAndCountAll({
+      const { count, rows } = await Expense.findAndCountAll({ 
         where: {
           userId,
           title: {
@@ -97,7 +98,7 @@ module.exports = {
   },
   
 
-  async expenseUpdate(req, res, next) {
+  async expenseUpdate(req, res,) {
     try {
       const userId = req.userId;
       const {
@@ -125,7 +126,7 @@ module.exports = {
         if (attachment && fs.existsSync(attachment)) {
           fs.unlinkSync(attachment);
         }
-        attachment = req.file.path;
+        attachment = `files/${req.file.filename}`;
       }
 
       await expense.update({
