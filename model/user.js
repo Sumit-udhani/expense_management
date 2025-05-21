@@ -36,7 +36,11 @@ module.exports = (sequelize) => {
             type: DataTypes.DATE,
             allowNull: true,
           },
-       
+          image: {
+            type: DataTypes.STRING,
+            allowNull: true,
+          }
+          
     });
 
     return User;

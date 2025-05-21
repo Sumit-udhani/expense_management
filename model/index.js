@@ -11,6 +11,10 @@ const Tag = require("./tag")(sequelize, DataTypes);
 const Roles = require("./roles")(sequelize, DataTypes);
 const Category = require("./categories")(sequelize, DataTypes);
 const Budget = require("./Budget")(sequelize, DataTypes);
+const UserProfile = require("./userProfile")(sequelize, DataTypes);
+
+User.hasOne(UserProfile, { foreignKey: "userId", onDelete: "CASCADE" });
+UserProfile.belongsTo(User, { foreignKey: "userId" });
 
 
 User.hasMany(Expense, { foreignKey: "userId" });
@@ -55,4 +59,5 @@ module.exports = {
   Roles,
   Category,
   Budget,
+  UserProfile
 };

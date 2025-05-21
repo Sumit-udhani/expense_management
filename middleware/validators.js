@@ -60,3 +60,11 @@ exports.budgetValidator = [
       return true;
     }), // or .isInt() if you're using numeric IDs
 ];
+exports.userProfileValidator = [
+  body("mobileNo")
+  .isLength({ min: 10, max: 10 })
+  .withMessage("Mobile number must be exactly 10 digits")
+  .isNumeric()
+  .withMessage("Mobile number must be numeric")
+
+]

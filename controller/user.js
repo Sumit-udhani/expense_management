@@ -1,4 +1,4 @@
-const { User, Roles } = require("../model");
+const { User, Roles, UserProfile } = require("../model");
 const { use } = require("../routes/category");
 const {
   hashPassword,
@@ -218,3 +218,73 @@ exports.resetPassword = async (req, res, next) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.getUserProfile =  async(req,res,next) =>{
+  try {
+    
+    const userId = req.userId;
+    const user = await User.findByPk(userId,{
+      include: {
+        model: UserProfile,
+        attributes: [ 'mobileNo']
+      },
+      attributes: ['name','email', 'image']
+    })
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.status(200).json(user)
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({error:error.message})
+  }
+}
+exports.uploadProfileImage = async(req,res,next) =>{
+  try {
+    
+    const userId = req.userId;
+    if (!req.file) {
+      return res.status(400).json({error:'No image uploaded'})
+    }
+    const imagePath = req.file.filename;
+    const user = await User.findByPk(userId)
+    if (!user) return res.status(404).json({ error: "User not found" });
+    user.image = imagePath;
+    await user.save();
+    res.status(200).json({
+      message: "Profile image uploaded successfully",
+      image: imagePath,
+    });
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({error:error.message})
+  }
+}
+exports.updateUserProfile = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { name, mobileNo } = req.body;
+
+    let profile = await UserProfile.findOne({ where: { userId } });
+
+    if (profile) {
+     
+      profile.name = name || profile.name;
+      profile.mobileNo = mobileNo || profile.mobileNo;
+      await profile.save();
+    } else {
+      
+      profile = await UserProfile.create({
+        userId,
+        name,
+        mobileNo,
+      });
+    }
+
+    res.status(200).json({ message: "Profile saved successfully", profile });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
