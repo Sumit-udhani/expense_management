@@ -1,4 +1,4 @@
-const { User, Roles, Expense, Category, Tag } = require("../model");
+const { User, Roles, Expense, Category, Tag,UserProfile } = require("../model");
 const { Op } = require("sequelize");
 
 exports.getAllUsers = async (req, res, next) => {

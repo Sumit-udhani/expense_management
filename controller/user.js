@@ -222,7 +222,9 @@ exports.resetPassword = async (req, res, next) => {
 exports.getUserProfile =  async(req,res,next) =>{
   try {
     
-    const userId = req.userId;
+    const userId = req.query.id || req.userId;
+
+    
     const user = await User.findByPk(userId,{
       include: {
         model: UserProfile,
