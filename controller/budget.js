@@ -7,11 +7,54 @@ exports.setMonthlyBudget = async (req, res) => {
     const { amount, month, year, categoryId } = req.body;
     const userId = req.userId;
 
+    const isCategoryBudget = !!categoryId;
+
+
+    if (isCategoryBudget) {
+      
+      const overallBudget = await Budget.findOne({
+        where: { userId, month, year, categoryId: null },
+      });
+
+      if (!overallBudget) {
+        return res.status(400).json({
+          error: "Set an overall budget first before setting category budgets.",
+        });
+      }
+
+      const totalOverallBudget = parseFloat(overallBudget.amount);
+
+   
+      const otherBudgets = await Budget.findAll({
+        where: {
+          userId,
+          month,
+          year,
+          categoryId: { [Op.ne]: null, [Op.ne]: categoryId },
+        },
+      });
+
+      const otherTotal = otherBudgets.reduce(
+        (sum, b) => sum + parseFloat(b.amount),
+        0
+      );
+
+    
+      const remaining = totalOverallBudget - otherTotal;
+
+      if (parseFloat(amount) > remaining) {
+        return res.status(400).json({
+          error: `Not enough budget available. You can assign up to ${remaining} for this category.`,
+        });
+      }
+    }
+
+
     const whereClause = {
       userId,
       month,
       year,
-      categoryId: categoryId || null, 
+      categoryId: categoryId || null,
     };
 
     const [budget, created] = await Budget.findOrCreate({
@@ -26,8 +69,8 @@ exports.setMonthlyBudget = async (req, res) => {
 
     res.status(201).json({ message: 'Budget Saved', budget });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to save budget', error });
+    console.error("Set Monthly Budget Error:", error);
+    res.status(500).json({ error: 'Failed to save budget' });
   }
 };
 
@@ -111,40 +154,66 @@ exports.getMonthlyTotals = async (req, res) => {
   }
 };
 
-  exports.getCategoryDistribution = async (req, res) => {
-    try {
-      const userId = req.userId;
-      const now = new Date();
-      const month = parseInt(req.query.month) || now.getMonth() + 1;
-      const year = parseInt(req.query.year) || now.getFullYear();
+exports.getCategoryDistribution = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const now = new Date();
+    const month = parseInt(req.query.month) || now.getMonth() + 1;
+    const year = parseInt(req.query.year) || now.getFullYear();
+
+    const start = new Date(`${year}-${month}-01`);
+    const end = new Date(`${year}-${month + 1}-01`);
+
   
-      const start = new Date(`${year}-${month}-01`);
-      const end = new Date(`${year}-${month + 1}-01`);
-  
-      const expenses = await Expense.findAll({
-        where: {
-          userId,
-          date: {
-            [Op.gte]: start,
-            [Op.lt]: end,
-          },
+    const allCategories = await Category.findAll();
+
+
+    const expenses = await Expense.findAll({
+      where: {
+        userId,
+        date: {
+          [Op.gte]: start,
+          [Op.lt]: end,
         },
-        include: [{ model: Category, attributes: ['name'] }],
-        attributes: [
-          'categoryId',
-          [fn('SUM', col('amount')), 'total'],
-        ],
-        group: ['categoryId', 'Category.id'],
-      });
-  
-      const result = expenses.map((e) => ({
-        category: e.Category?.name || 'Uncategorized',
-        total: parseFloat(e.dataValues.total),
-      }));
-  
-      res.json(result);
-    } catch (error) {
-      console.error('Error getting category distribution:', error);
-      res.status(500).json({ error: 'Failed to fetch category-wise expenses' });
-    }
-  };
+      },
+      attributes: [
+        'categoryId',
+        [fn('SUM', col('amount')), 'total'],
+      ],
+      group: ['categoryId'],
+      raw: true,
+    });
+
+   
+    const budgets = await Budget.findAll({
+      where: {
+        userId,
+        month,
+        year,
+        categoryId: { [Op.ne]: null },
+      },
+      raw: true,
+    });
+
+    
+    const result = allCategories.map((category) => {
+      const catId = category.id;
+      const catName = category.name;
+
+      const expenseEntry = expenses.find((e) => e.categoryId === catId);
+      const budgetEntry = budgets.find((b) => b.categoryId === catId);
+
+      return {
+        categoryId: catId,
+        category: catName,
+        total: parseFloat(expenseEntry?.total || 0),
+        budget: parseFloat(budgetEntry?.amount || 0) || null,
+      };
+    });
+
+    res.json(result);
+  } catch (error) {
+    console.error("Error getting category distribution:", error);
+    res.status(500).json({ error: "Failed to fetch category-wise expenses" });
+  }
+};

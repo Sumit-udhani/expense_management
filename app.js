@@ -1,5 +1,5 @@
 const express = require('express');
-const cors = require('cors'); // ✅ include this
+const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const userRoutes = require('./routes/user');
@@ -14,8 +14,11 @@ const app = express();
 
 app.use(cors({
   origin: "http://localhost:5173", 
-  credentials: true,               
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
+
 
 app.use(bodyParser.json());
 app.use('/files', express.static('files'));
